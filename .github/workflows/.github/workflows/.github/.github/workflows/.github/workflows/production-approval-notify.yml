@@ -1,0 +1,44 @@
+name: Production Deployment Approval Notification
+
+on:
+  deployment_status:
+
+jobs:
+  notify-reviewers:
+    name: Notify Reviewers for Sign-Off
+    if: github.event.deployment_status.state == 'waiting'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Slack Approval Notification
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {
+              "text": "🚨 *PRODUCTION DEPLOYMENT SIGN-OFF REQUIRED*",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Pending Approval*\n*Repository:* `${{ github.repository }}`\n*Commit:* `${{ github.sha }}`\n*Triggered by:* `${{ github.actor }}`"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Review & Approve Sign-Off 🚀"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          
