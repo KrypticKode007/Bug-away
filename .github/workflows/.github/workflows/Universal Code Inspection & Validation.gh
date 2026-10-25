@@ -1,0 +1,7 @@
+gh api repos/KrypticKode007/Bug-away/branches/main/protection \
+  -X PUT \
+  -F required_status_checks[strict]=true \
+  -F "required_status_checks[checks][][context]=Universal Code Inspection & Validation" \
+  -F enforce_admins=true \
+  -F restrictions=null \
+  -F required_pull_request_reviews[required_approving_review_count]=1
