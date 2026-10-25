@@ -1,0 +1,47 @@
+name: Universal Fortress Pipeline (Any App, Any Script)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  pull-requests: write
+
+jobs:
+  universal-fortress-guard:
+    name: Universal Code Inspection & Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Full Checkout (Required for cross-file and historical validation)
+      - name: Checkout Code Base
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Universal Syntax, Style, and Linter Enforcement
+      # Automatically activates linters for Python, JS/TS, Go, Rust, PHP, Ruby, C++, Shell, Docker, YAML, JSON, Markdown, etc.
+      - name: Run Super-Linter (All Languages & Scripts)
+        uses: super-linter/super-linter@v7.1.0
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ALL_CODEBASE: false # Only inspect changed files on Pull Requests for blistering speed
+          FILTER_REGEX_EXCLUDE: |
+            (.github/workflows/.*)
+
+      # 3. Universal Dependency & Supply Chain Vulnerability Scan
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '1' # Fails the pipeline instantly if a high/critical vulnerability is found
+          severity: 'HIGH,CRITICAL'
+          
