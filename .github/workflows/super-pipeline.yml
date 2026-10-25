@@ -1,0 +1,52 @@
+name: Super Upgrade Fortress Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+permissions:
+  contents: read
+  security-events: write # Required for security scanning uploads
+
+jobs:
+  immunize-and-verify:
+    name: Build, Typecheck, and Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      # Phase 1: Compile-Time Immunization & Linting
+      - name: Run Static Type Check
+        run: npm run type-check
+
+      - name: Run Strict Linters
+        run: npm run lint
+
+      # Phase 3: Security & Dependency Vulnerability Scanning
+      - name: Audit Dependencies for Vulnerabilities
+        run: npm audit --audit-level=high
+
+      # Phase 2: Automated Testing & Coverage Verification
+      - name: Run Property-Based and Unit Tests with Coverage
+        run: npm run test:coverage
+
+      # Phase 4: Gated Build Verification
+      - name: Verify Production Build
+        run: npm run build
