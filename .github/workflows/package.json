@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --max-warnings=0",
+    "test:coverage": "jest --coverage --ci --watchAll=false",
+    "build": "tsc && vite build"
+  }
+}
